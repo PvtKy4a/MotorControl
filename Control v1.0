@@ -76,7 +76,10 @@ void loop() {
     lcd.setCursor(column, 3);
     if (print_names_flag == true) lcd.print(F("Uptime: "));
     uptime(uptime_sec_count);
-    if (print_names_flag == true) column = 9;
+    if (print_names_flag == true) {
+      column = 9;
+      print_names_flag == false;
+    }
   }
 }
 
@@ -88,4 +91,8 @@ void uptime(uint16_t sec_count) {
   uint8_t this_min = min_count % 60;
   if (this_min < 10) lcd.print(0);
   lcd.print(this_min);
+  lcd.print(":");
+  byte this_sec = sec_count % 60;
+  if (this_sec < 10) lcd.print(0);
+  lcd.print(this_sec);
 }
