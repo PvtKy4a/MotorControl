@@ -1,0 +1,91 @@
+#include <EncButton.h>
+EncButton<EB_TICK, 2, 3, 4> enc(INPUT);
+EncButton<EB_TICK, 12> btn(INPUT_PULLUP);
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x3f, 20, 4);
+
+#define motor1 6
+#define motor2 7
+#define pump 8
+
+void uptime(uint16_t sec_count);
+
+void setup() {
+
+  lcd.init();
+  lcd.backlight();
+
+  pinMode(motor1, OUTPUT);
+  pinMode(motor2, OUTPUT);
+  pinMode(pump, OUTPUT);
+
+}
+
+void loop() {
+
+  enc.tick();
+  btn.tick();
+
+  static bool motor1_start = false;
+  static bool motor2_start = false;
+  static uint32_t motor1_timer;
+  static uint32_t motor2_timer;
+  if (btn.isClick()) {
+    digitalWrite(motor1, HIGH);
+    digitalWrite(motor2, HIGH);
+    motor1_start = true;
+    motor2_start = true;
+    motor1_timer = millis();
+    motor2_timer = millis();
+  }
+  if (motor1_start == true && millis() - motor1_timer >= 30000) {
+    digitalWrite(motor1, LOW);
+    digitalWrite(pump, HIGH);
+    motor1_start = false;
+  }
+  if (motor2_start == true && millis() - motor2_timer >= 60000) {
+    digitalWrite(pump, LOW);
+    digitalWrite(motor2, LOW);
+    motor2_start == false;
+  }
+
+  static uint16_t uptime_sec_count;
+  static uint32_t uptime_tmr;
+  if (motor2_start == true) {
+    if (millis() - uptime_tmr >= 1000) {
+      uptime_tmr = millis();
+      ++uptime_sec_count;
+    }
+  }
+  static uint32_t upd_tmr;
+  static uint8_t column = 1;
+  static bool print_names_flag = true;
+  if (millis() - upd_tmr >= 100) {
+    upd_tmr = millis();
+    lcd.setCursor(column, 0);
+    if (print_names_flag == true) lcd.print(F("Motor1: "));
+    lcd.print(digitalRead(motor1) ? F(" on") : F("off"));
+    lcd.setCursor(column, 1);
+    if (print_names_flag == true) lcd.print(F("Motor2: "));
+    lcd.print(digitalRead(motor2) ? F(" on") : F("off"));
+    lcd.setCursor(column, 2);
+    if (print_names_flag == true) lcd.print(F("Pump: "));
+    lcd.print(digitalRead(pump) ? F(" on") : F("off"));
+    lcd.setCursor(column, 3);
+    if (print_names_flag == true) lcd.print(F("Uptime: "));
+    uptime(uptime_sec_count);
+    if (print_names_flag == true) column = 9;
+  }
+}
+
+void uptime(uint16_t sec_count) {
+  uint8_t min_count = sec_count / 60;
+  uint8_t this_hour = sec_count / 3600;
+  lcd.print(this_hour);
+  lcd.print(":");
+  uint8_t this_min = min_count % 60;
+  if (this_min < 10) lcd.print(0);
+  lcd.print(this_min);
+}
