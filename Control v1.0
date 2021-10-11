@@ -64,8 +64,8 @@ void loop() {
   static uint32_t upd_tmr;
   static uint8_t column = 1;
   static bool print_names_flag = true;
-  static uint16_t motor1_time_print = motor1_time / 1000;
-  static uint16_t motor2_time_print = motor2_time / 1000;
+  uint16_t motor1_time_print = motor1_time / 1000;
+  uint16_t motor2_time_print = motor2_time / 1000;
   if (millis() - upd_tmr >= 100) {
     upd_tmr = millis();
     lcd.setCursor(column, 0);
@@ -131,8 +131,8 @@ void loop() {
           menu_item_enter = true;
         }
         if (menu_item_enter == true) {
-          if (enc.isLeft()) motor1_time = constrain(motor1_time - 1000, 1000, 60000);
-          if (enc.isRight()) motor1_time = constrain(motor1_time + 1000, 1000, 60000);
+          if (enc.isLeft()) motor1_time = constrain(motor1_time -= 1000, 10000, 60000);
+          if (enc.isRight()) motor1_time = constrain(motor1_time += 1000, 10000, 60000);
         }
         if (enc.isHolded()) {
           cursor_column = 0;
@@ -152,8 +152,8 @@ void loop() {
           menu_item_enter = true;
         }
         if (menu_item_enter == true) {
-          if (enc.isLeft()) motor2_time = constrain(motor2_time - 1000, 1000, 120000);
-          if (enc.isRight()) motor2_time = constrain(motor2_time + 1000, 1000, 120000);
+          if (enc.isLeft()) motor2_time = constrain(motor2_time -= 1000, 10000, 120000);
+          if (enc.isRight()) motor2_time = constrain(motor2_time += 1000, 10000, 120000);
         }
         if (enc.isHolded()) {
           cursor_column = 0;
