@@ -40,15 +40,17 @@ void loop() {
     motor1_timer = millis();
     motor2_timer = millis();
   }
-  if (motor1_start == true && millis() - motor1_timer >= 30000) {
+  static uint32_t motor1_time = 30000;
+  static uint32_t motor2_time = 60000;
+  if (motor1_start == true && millis() - motor1_timer >= motor1_time) {
     digitalWrite(motor1, LOW);
     digitalWrite(pump, HIGH);
     motor1_start = false;
   }
-  if (motor2_start == true && millis() - motor2_timer >= 60000) {
+  if (motor2_start == true && millis() - motor2_timer >= motor2_time) {
     digitalWrite(pump, LOW);
     digitalWrite(motor2, LOW);
-    motor2_start == false;
+    motor2_start = false;
   }
 
   static uint16_t uptime_sec_count;
@@ -62,24 +64,158 @@ void loop() {
   static uint32_t upd_tmr;
   static uint8_t column = 1;
   static bool print_names_flag = true;
+  static uint32_t motor1_time_print = motor1_time / 1000;
+  static uint32_t motor2_time_print = motor2_time / 1000;
   if (millis() - upd_tmr >= 100) {
     upd_tmr = millis();
     lcd.setCursor(column, 0);
     if (print_names_flag == true) lcd.print(F("Motor1: "));
     lcd.print(digitalRead(motor1) ? F(" on") : F("off"));
+    lcd.setCursor(13, 0);
+    lcd.print(motor1_time_print);
+    if (print_names_flag == true) lcd.print(F(" sec"));
     lcd.setCursor(column, 1);
     if (print_names_flag == true) lcd.print(F("Motor2: "));
     lcd.print(digitalRead(motor2) ? F(" on") : F("off"));
+    lcd.setCursor(13, 1);
+    lcd.print(motor2_time_print);
+    if (print_names_flag == true) lcd.print(F(" sec"));
     lcd.setCursor(column, 2);
-    if (print_names_flag == true) lcd.print(F("Pump: "));
+    if (print_names_flag == true) lcd.print(F("Pump:   "));
     lcd.print(digitalRead(pump) ? F(" on") : F("off"));
     lcd.setCursor(column, 3);
     if (print_names_flag == true) lcd.print(F("Uptime: "));
     uptime(uptime_sec_count);
     if (print_names_flag == true) {
-      column = 9;
-      print_names_flag == false;
+      lcd.setCursor(17, 3);
+      lcd.print(F("rst"));
     }
+    if (print_names_flag == true) {
+      column = 9;
+      print_names_flag = false;
+    }
+  }
+
+  static uint8_t cursor_string = 0;
+  static uint8_t cursor_column = 0;
+  static bool main_menu = true;
+  if (main_menu) {
+    if (enc.isLeft()) cursor_string = constrain(cursor_string - 1, 0, 3);
+    if (enc.isRight()) cursor_string = constrain(cursor_string + 1, 0, 3);
+    lcd.setCursor(cursor_column, cursor_string);
+    lcd.write(126);
+  }
+  static uint8_t pre_cursor_string = 0;
+  if (pre_cursor_string != cursor_string) {
+    lcd.setCursor (cursor_column, pre_cursor_string);
+    lcd.print(" ");
+    pre_cursor_string = cursor_string;
+  }
+  static uint8_t pre_cursor_column = 0;
+  if (pre_cursor_column != cursor_column) {
+    lcd.setCursor (pre_cursor_column, cursor_string);
+    lcd.print(" ");
+    pre_cursor_column = cursor_column;
+  }
+  static bool menu_item_available = true;
+  static bool menu_item_enter = false;
+  static bool menu_sub_item_enter = false;
+  switch (cursor_string) {
+    case (0): {
+        if (menu_item_available == true && enc.isClick()) {
+          cursor_column = 12;
+          lcd.setCursor(cursor_column, cursor_string);
+          lcd.write(126);
+          main_menu = false;
+          menu_item_available = false;
+          menu_item_enter = true;
+        }
+        if (menu_item_enter == true) {
+          if (enc.isLeft()) motor1_time = constrain(motor1_time - 1000, 1000, 60000);
+          if (enc.isRight()) motor1_time = constrain(motor1_time + 1000, 1000, 60000);
+        }
+        if (enc.isHolded()) {
+          cursor_column = 0;
+          main_menu = true;
+          menu_item_available = true;
+          menu_item_enter = false;
+        }
+      }
+      break;
+    case (1): {
+        if (menu_item_available == true && enc.isClick()) {
+          cursor_column = 12;
+          lcd.setCursor(cursor_column, cursor_string);
+          lcd.write(126);
+          main_menu = false;
+          menu_item_available = false;
+          menu_item_enter = true;
+        }
+        if (menu_item_enter == true) {
+          if (enc.isLeft()) motor2_time = constrain(motor2_time - 1000, 1000, 120000);
+          if (enc.isRight()) motor2_time = constrain(motor2_time + 1000, 1000, 120000);
+        }
+        if (enc.isHolded()) {
+          cursor_column = 0;
+          main_menu = true;
+          menu_item_available = true;
+          menu_item_enter = false;
+        }
+      }
+      break;
+    case (2): {
+        if (menu_item_available == true && enc.isClick()) {
+          cursor_column = 8;
+          lcd.setCursor(cursor_column, cursor_string);
+          lcd.write(126);
+          main_menu = false;
+          menu_item_available = false;
+          menu_item_enter = true;
+        }
+        if (menu_item_enter == true) {
+
+        }
+        if (enc.isHolded()) {
+          cursor_column = 0;
+          main_menu = true;
+          menu_item_available = true;
+          menu_item_enter = false;
+        }
+      }
+      break;
+    case (3): {
+        if (menu_item_available == true && enc.isClick()) {
+          cursor_column = 16;
+          lcd.setCursor(cursor_column, cursor_string);
+          lcd.write(126);
+          main_menu = false;
+          menu_item_available = false;
+          menu_item_enter = true;
+        }
+        if (menu_item_enter == true) {
+         
+          if (menu_sub_item_enter == false) {
+
+          }
+          switch (cursor_column) {
+            case (8): {
+
+                break;
+              case (13): {
+
+                }
+                break;
+              }
+          }
+          if (!menu_sub_item_enter && enc.isHolded()) {
+            cursor_column = 0;
+            main_menu = true;
+            menu_item_available = true;
+            menu_item_enter = false;
+          }
+        }
+        break;
+      }
   }
 }
 
