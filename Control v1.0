@@ -40,8 +40,8 @@ void loop() {
     motor1_timer = millis();
     motor2_timer = millis();
   }
-  static uint32_t motor1_time = 30000;
-  static uint32_t motor2_time = 60000;
+  static uint16_t motor1_time = 30000;
+  static uint16_t motor2_time = 60000;
   if (motor1_start == true && millis() - motor1_timer >= motor1_time) {
     digitalWrite(motor1, LOW);
     digitalWrite(pump, HIGH);
@@ -64,25 +64,25 @@ void loop() {
   static uint32_t upd_tmr;
   static uint8_t column = 1;
   static bool print_names_flag = true;
-  static uint32_t motor1_time_print = motor1_time / 1000;
-  static uint32_t motor2_time_print = motor2_time / 1000;
+  static uint16_t motor1_time_print = motor1_time / 1000;
+  static uint16_t motor2_time_print = motor2_time / 1000;
   if (millis() - upd_tmr >= 100) {
     upd_tmr = millis();
     lcd.setCursor(column, 0);
     if (print_names_flag == true) lcd.print(F("Motor1: "));
-    lcd.print(digitalRead(motor1) ? F(" on") : F("off"));
+    lcd.print(digitalRead(motor1) ? F("on ") : F("off"));
     lcd.setCursor(13, 0);
     lcd.print(motor1_time_print);
     if (print_names_flag == true) lcd.print(F(" sec"));
     lcd.setCursor(column, 1);
     if (print_names_flag == true) lcd.print(F("Motor2: "));
-    lcd.print(digitalRead(motor2) ? F(" on") : F("off"));
+    lcd.print(digitalRead(motor2) ? F("on ") : F("off"));
     lcd.setCursor(13, 1);
     lcd.print(motor2_time_print);
     if (print_names_flag == true) lcd.print(F(" sec"));
     lcd.setCursor(column, 2);
     if (print_names_flag == true) lcd.print(F("Pump:   "));
-    lcd.print(digitalRead(pump) ? F(" on") : F("off"));
+    lcd.print(digitalRead(pump) ? F("on ") : F("off"));
     lcd.setCursor(column, 3);
     if (print_names_flag == true) lcd.print(F("Uptime: "));
     uptime(uptime_sec_count);
@@ -193,31 +193,33 @@ void loop() {
           menu_item_enter = true;
         }
         if (menu_item_enter == true) {
-         
+          if (enc.isClick()) uptime_sec_count = 0;
           if (menu_sub_item_enter == false) {
 
           }
           switch (cursor_column) {
             case (8): {
 
-                break;
-              case (13): {
-
-                }
-                break;
               }
-          }
-          if (!menu_sub_item_enter && enc.isHolded()) {
-            cursor_column = 0;
-            main_menu = true;
-            menu_item_available = true;
-            menu_item_enter = false;
+              break;
+            case (13): {
+
+              }
+              break;
           }
         }
-        break;
+        if (menu_sub_item_enter == false && enc.isHolded()) {
+          cursor_column = 0;
+          main_menu = true;
+          menu_item_available = true;
+          menu_item_enter = false;
+        }
       }
+      break;
   }
+
 }
+
 
 void uptime(uint16_t sec_count) {
   uint8_t min_count = sec_count / 60;
